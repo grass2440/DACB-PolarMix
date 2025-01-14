@@ -1,5 +1,6 @@
 import os
 import os.path
+import random
 
 import numpy as np
 from torchsparse import SparseTensor
@@ -11,57 +12,62 @@ from core.datasets.utils import polarmix
 
 __all__ = ['SemanticKITTI_PolarMix']
 
-label_name_mapping = {
-    0: 'unlabeled',
-    1: 'outlier',
-    10: 'car',
-    11: 'bicycle',
-    13: 'bus',
-    15: 'motorcycle',
-    16: 'on-rails',
-    18: 'truck',
-    20: 'other-vehicle',
-    30: 'person',
-    31: 'bicyclist',
-    32: 'motorcyclist',
-    40: 'road',
-    44: 'parking',
-    48: 'sidewalk',
-    49: 'other-ground',
-    50: 'building',
-    51: 'fence',
-    52: 'other-structure',
-    60: 'lane-marking',
-    70: 'vegetation',
-    71: 'trunk',
-    72: 'terrain',
-    80: 'pole',
-    81: 'traffic-sign',
-    99: 'other-object',
-    252: 'moving-car',
-    253: 'moving-bicyclist',
-    254: 'moving-person',
-    255: 'moving-motorcyclist',
-    256: 'moving-on-rails',
-    257: 'moving-bus',
-    258: 'moving-truck',
-    259: 'moving-other-vehicle'
-}
+LABEL_DICT = {
+    0: "unlabeled",
+    4: "1 person",
+    5: "2+ person",
+    6: "rider",
+    7: "car",
+    8: "trunk",
+    9: "plants",
+    10: "traffic sign 1", # standing sign
+    11: "traffic sign 2", # hanging sign
+    12: "traffic sign 3", # high/big hanging sign
+    13: "pole",
+    14: "trashcan",
+    15: "building",
+    16: "cone/stone",
+    17: "fence",
+    21: "bike",
+    22: "ground"} # class definition
 
+
+
+label_map_dict = {
+    0: 23, #"unlabeled"
+    4: 0, #"1 person"
+    5: 0, #"2+ person"
+    6: 1, #"rider"
+    7: 2, #"car"
+    8: 3, #"trunk"
+    9: 4, #"plants"
+    10: 5, #"traffic sign 1" # standing sign
+    11: 5, #"traffic sign 2" # hanging sign
+    12: 5, #"traffic sign 3" # high/big hanging sign
+    13: 6, #"pole"
+    14: 7, #"trashcan"
+    15: 8, #"building"
+    16: 9, #"cone/stone"
+    17: 10, #"fence"
+    21: 11, #"bike"
+    22: 12, #"ground"
+} # class definition
+
+#self.label_map = [0,1,1,2,3,4,5,6,6,6,7,8,9,10,11,12,13]
+'''
 kept_labels = [
-    'road', 'sidewalk', 'parking', 'other-ground', 'building', 'car', 'truck',
-    'bicycle', 'motorcycle', 'other-vehicle', 'vegetation', 'trunk', 'terrain',
-    'person', 'bicyclist', 'motorcyclist', 'fence', 'pole', 'traffic-sign'
+    'unlabeled', 'person', 'rider', 'car', 'trunk',
+    'plants', 'traffic sign', 'pole', 'trashcan',
+    'building', 'cone/stone', 'fence', 'bike', 'ground'
 ]
+'''
 
-"""
-{'car': 0, 'bicycle': 1, 'motorcycle': 2, 'truck': 3, 'other-vehicle': 4, 'person': 5, 'bicyclist': 6, 'motorcyclist': 7, 
-'road': 8, 'parking': 9, 'sidewalk': 10, 'other-ground': 11, 'building': 12, 'fence': 13, 'vegetation': 14, 'trunk': 15, 
-'terrain': 16, 'pole': 17, 'traffic-sign': 18}
-"""
-instance_classes = [0, 1, 2, 3, 4, 5, 6, 7]
-Omega = [np.random.random() * np.pi * 2 / 3, (np.random.random() + 1) * np.pi * 2 / 3]  # x3
 
+#instance_classes0 = [0, 5, 6, 7, 9]
+instance_classes0 = [0, 1, 2, 5, 6, 7, 9, 11]
+
+#Omega0 = np.random.random(8) * 2 * np.pi
+Omega0 = [np.random.random() * np.pi * 2 / 3, (np.random.random() + 1) * np.pi * 2 / 3]
 
 class SemanticKITTI_PolarMix(dict):
 
@@ -70,7 +76,8 @@ class SemanticKITTI_PolarMix(dict):
         sample_stride = kwargs.get('sample_stride', 1)
         google_mode = kwargs.get('google_mode', False)
 
-        logger.info("SemanticKITTI with PolarMix\n")
+        #logger.info("SemanticKITTI with PolarMix\n")
+        logger.info("SemanticPOSS with PolarMix\n")
 
         if submit_to_server:
             super().__init__({
@@ -131,15 +138,16 @@ class SemanticKITTIInternal:
         self.google_mode = google_mode
         self.seqs = []
         if split == 'train':
-            self.seqs = ['00', '01', '02', '03', '04', '05', '06', '07', '09', '10']
+            #self.seqs = ['00', '01', '02', '03', '04', '05', '06', '07', '09', '10']
+            self.seqs = ['00', '01', '02', '04', '05']
             if self.google_mode or trainval:
-                self.seqs.append('08')
+                self.seqs.append('03')
         elif self.split == 'val':
-            self.seqs = ['08']
-        elif self.split == 'test':
-            self.seqs = [
-                '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'
-            ]
+            self.seqs = ['03']
+        #elif self.split == 'test':
+            #self.seqs = [
+               # '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'
+            #]
 
         self.files = []
         for seq in self.seqs:
@@ -152,33 +160,14 @@ class SemanticKITTIInternal:
 
         if self.sample_stride > 1:
             self.files = self.files[::self.sample_stride]
-
-        reverse_label_name_mapping = {}
-        self.label_map = np.zeros(260)
-        cnt = 0
-        for label_id in label_name_mapping:
-            if label_id > 250:
-                if label_name_mapping[label_id].replace('moving-',
-                                                        '') in kept_labels:
-                    self.label_map[label_id] = reverse_label_name_mapping[
-                        label_name_mapping[label_id].replace('moving-', '')]
-                else:
-                    self.label_map[label_id] = 255
-            elif label_id == 0:
-                self.label_map[label_id] = 255
-            else:
-                if label_name_mapping[label_id] in kept_labels:
-                    self.label_map[label_id] = cnt
-                    reverse_label_name_mapping[
-                        label_name_mapping[label_id]] = cnt
-                    cnt += 1
-                else:
-                    self.label_map[label_id] = 255
-
-        self.reverse_label_name_mapping = reverse_label_name_mapping
-        self.num_classes = cnt
+            
+        
+        self.label_map = np.zeros(23)
+        for label_id, label_name in label_map_dict.items():
+            self.label_map[label_id] = label_name
+        
         self.angle = 0.0
-
+        
     def set_angle(self, angle):
         self.angle = angle
 
@@ -204,14 +193,16 @@ class SemanticKITTIInternal:
             # read another lidar scan
             index_2 = np.random.randint(len(self.files))
             pts2, labels2 = self.read_lidar_scan(index_2)
-            # polarmix
+           
+           # polarmix
             alpha = (np.random.random() - 1) * np.pi
             beta = alpha + np.pi
             block_, labels_ = polarmix(block_, labels_, pts2, labels2,
                                       alpha=alpha, beta=beta,
-                                      instance_classes=instance_classes,
-                                      Omega=Omega)
-
+                                      instance_classes0 =instance_classes0,
+                                      Omega0=Omega0
+                                      )
+            
         block = np.zeros_like(block_)
 
         if 'train' in self.split:
