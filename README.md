@@ -53,7 +53,7 @@ MinkowskiNet:
 python train.py configs/semantic_kitti/minkunet/cr0p5.yaml --run-dir run/semantickitti/minkunet_polarmix --distributed False
 ```
 
-- Note we only used one 2080Ti for training and testing. Training from scratch takes around 1.5 days. You may try larger batch size or distributed learning for faster training.
+- Note If the training dataset is SemanticPOSS, you only need to Change the data root path in configs/semantic_kitti/default.yaml. Additionally, adjust the sequence values in core/datasets/semantic_kitti.py and core/datasets/semantic_kitti_polarmix.py.
 
 ### Testing Models
 
