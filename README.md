@@ -1,5 +1,5 @@
 # DACB-PolarMix
-
+We propose a modified version of PolarMix's instance-level rotation and pasting method that dynamically adjusts the number of rotations and pastes based on the proportion of each instance's point cloud count relative to the total. This adaptive class-balancing approach ensures a more balanced distribution of instances across the entire dataset. We term our new algorithm Dynamic Adaptive Class-Balanced PolarMix (DACB-PolarMix). 
 ### Installation
 #### System requirements
 System requirements are as follows: CUDA 10.2, Python 3.8, and PyTorch 1.6.
@@ -32,15 +32,17 @@ pip install opencv-python
 ### Data Preparation
 
 #### SemanticKITTI  
-- Please follow the instructions from [here](http://www.semantic-kitti.org) to download the SemanticKITTI dataset (both KITTI Odometry dataset and SemanticKITTI labels) and extract all the files in the `sequences` folder to `/dataset/semantic-kitti`. You shall see 22 folders 00, 01, …, 21; each with subfolders named `velodyne` and `labels`.  
+- Download the SemanticKITTI dataset from [here](http://www.semantic-kitti.org)
 - Change the data root path in configs/semantic_kitti/default.yaml
-
+#### SemanticPOSS
+- Download the SemanticPOSS dataset from [here](http://www.poss.pku.edu.cn)
+- Change the data root path in configs/semantic_kitti/default.yaml
 
 ### Training
 
 #### SemanticKITTI
 
-We release the training code for SPVCNN and MinkowskiNet with PolarMix. You may run the following code to train the model from scratch. 
+We release the training code for SPVCNN and MinkowskiNet with DACB-PolarMix. You may run the following code to train the model from scratch. 
 
 SPVCNN:
 ```bash
@@ -64,7 +66,8 @@ torchpack dist-run -np 1 python test.py --name ./runs/semantickitti/minkunet_pol
 
 
 ## Thanks
-We thank the opensource project [TorchSparse](https://github.com/mit-han-lab/torchsparse) and [SPVNAS](https://github.com/mit-han-lab/spvnas).
+Our modifications to the code are primarily in three files: core/datasets/semantic_kitti.py, core/datasets/semantic_kitti_polarmix.py, and core/datasets/utils.py.
+We thank the original PolarMix works.
 ```
 @article{xiao2022polarmix,
   title={PolarMix: A General Data Augmentation Technique for LiDAR Point Clouds},
